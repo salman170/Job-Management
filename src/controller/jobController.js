@@ -88,7 +88,7 @@ const updateJob = async (req, res) => {
 
     if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: 'No Job data provided in body for Update' })
 
-    let { title, skills, experience, description, isDeleted, ...rest } = data
+    let { title, skills, experience, description, isDeleted, email, ...rest } = data
 
     if (Object.keys(rest).length > 0) return res.status(400).send({ status: false, message: `You can not update these:-( ${Object.keys(rest)} ) data ` })
 
@@ -112,7 +112,12 @@ const updateJob = async (req, res) => {
     if (experience) {
       if (!alphaNumericValid(experience)) return res.status(400).send({ status: false, msg: "Enter valid experience details" })
 
-      filter.experience = experience.trim()
+      filter.experience = experience
+    }
+    if(email){
+      if (!isValidEmail(email)) { return res.status(400).send({ status: false, message: "Please provide a valid email" }) }
+
+      filter.email = email
     }
     if (isDeleted == true || isDeleted == false) {
       filter.isDeleted = isDeleted
@@ -120,7 +125,7 @@ const updateJob = async (req, res) => {
 
     filter.postedAt = moment(new Date()).format('DD-MM-YYYY')
 
-    const updateJob = await jobModel.findByIdAndUpdate(req.params.jobId, { $set: filter }).populate({
+    const updateJob = await jobModel.findByIdAndUpdate(req.params.jobId, { $set: filter },{ new: true }).populate({
       path: 'details', select: { _id: 0, 'cname': 1, 'fname': 1, 'lname': 1 }
     })
 

@@ -15,8 +15,8 @@ router.get('/getuser/:userId', authentication, getUser)
 
 router.post('/createjob', authentication, createJob)
 router.get("/getpostedjob", authentication, getPostedJobDetails)
-router.put("/updatejob",authentication , authorization, updateJob)
-router.delete("/deletejob",authentication , authorization, deleteJob)
+router.put("/updatejob/:jobId",authentication , authorization, updateJob)
+router.delete("/deletejob/:jobId",authentication , authorization, deleteJob)
 
 //<=======================Applicant Api =================================>
 
