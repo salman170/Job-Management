@@ -1,3 +1,5 @@
+const mongoose = require("mongoose")
+const ObjectId = mongoose.Types.ObjectId.isValid
 // ------------- validation of data  -------------
 const isValidRequestBody = function (requestBody) {
     return Object.keys(requestBody).length > 0;
@@ -11,8 +13,8 @@ const isValidName = function (value) {
         if (value.trim() !== "") {
             let regex = /^([a-zA-Z ]){2,30}$/
             return regex.test(value.trim())
-        } else  return false 
-    } else return false 
+        } else return false
+    } else return false
 }
 
 
@@ -50,7 +52,11 @@ const isValidCompany = function (value) {
 const alphaNumericValid = (value) => {
     let alphaRegex = /^[a-zA-Z0-9-_,. ]+$/;
     if (alphaRegex.test(value)) return true; // /^[- a-zA-Z'\.,][^/]{1,150}/ allows every things
-  }
+}
 
+const isValidObjectId = (value) =>{
+    if(!ObjectId(value)) return false
+    else return true
+}
 
-module.exports = { isValidRequestBody, isValidName, isValidEmail, isValidPassword, isValidCompany, alphaNumericValid }
+    module.exports = { isValidRequestBody, isValidName, isValidEmail, isValidPassword, isValidCompany, alphaNumericValid, isValidObjectId }

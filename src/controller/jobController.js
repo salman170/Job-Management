@@ -1,6 +1,6 @@
 const jobModel = require("../models/jobModel")
 const applicantModel = require("../models/applicantModel")
-const { isValidRequestBody, alphaNumericValid } = require("../validator/validator")
+const { isValidRequestBody, alphaNumericValid, isValidEmail } = require("../validator/validator")
 const moment = require("moment")
 
 
@@ -12,7 +12,7 @@ const createJob = async (req, res) => {
 
     if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: 'No Job data provided in body' })
 
-    let { title, skills, experience, description } = data
+    let { title, skills, experience, description ,email} = data
 
     if (!title) { return res.status(400).send({ status: false, message: "Title is required" }) }
 
@@ -29,6 +29,10 @@ const createJob = async (req, res) => {
     if (!experience) { return res.status(400).send({ status: false, message: "experience is required" }) }
 
     if (!alphaNumericValid(experience)) return res.status(400).send({ status: false, message: "Enter valid experience details" });
+
+    if (!email) { return res.status(400).send({ status: false, message: "Email is required" }) }
+
+    if (!isValidEmail(email)) { return res.status(400).send({ status: false, message: "Please provide a valid email" }) }
 
     data.details = req.userId
 
@@ -58,9 +62,10 @@ const getPostedJobDetails = async (req, res) => {
 
     if (jobData.length == 0) return res.status(404).send({ status: false, message: "No data found." })
 
-    let dataJ = jobData._doc
+    let dataJ = []
 
-    for (let i = 0; i < dataJ.length; i++) {
+    for (let i = 0; i < jobData.length; i++) {
+      dataJ.push(jobData[i].toObject())
       let applicantData = await applicantModel.find({ jobId: dataJ[i]._id })
       if (applicantData.length > 0) {
         dataJ[i].applicantDetails = applicantData

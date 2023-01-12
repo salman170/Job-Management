@@ -51,4 +51,4 @@ const authorization = async function (req, res, next) {
         res.status(500).send({ status: false, message: err.message })
     }
 }
-module.exports = { authentication };
+module.exports = { authentication, authorization };

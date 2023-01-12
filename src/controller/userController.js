@@ -2,7 +2,7 @@
 const userModel = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { isValidRequestBody, isValidName, isValidEmail, isValidPassword,isValidCompany } = require("../validator/validator");
+const { isValidRequestBody, isValidName, isValidEmail, isValidPassword,isValidCompany, isValidObjectId } = require("../validator/validator");
 
 //<<-----------------------------------------------Create user-------------------------------------------------------->>
 const signup = async function (req, res) {
@@ -105,21 +105,21 @@ const getUser = async function (req, res) {
   try {
     let userId = req.params.userId;
 
-    if (!userId) return res.status.send({ status: false, message: "userId is required in path params", });
+    if (!userId) return res.status(400).send({ status: false, message: "userId is required in path params", });
 
     if (!isValidObjectId(userId.trim())) return res.status(400).send({ status: false, message: `${userId} is Invalid UserId ` });
 
     if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorized access!" });
 
-    const userData = await userModel.findById(userId);
+    const userData = await userModel.findById(req.userId);
 
     if (!userData) return res.status(404).send({ status: false, message: `No user data found for this ${userId}`, });
 
     return res.status(200).send({ status: true, message: "User profile details", data: userData });
 
-  } catch (err) {
-    cosole.log(err.message);
-    res.status(500).send({ status: false, message: err.merssage });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send({ status: false, message: error.message });
   }
 };
 
