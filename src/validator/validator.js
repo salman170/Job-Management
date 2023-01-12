@@ -48,7 +48,7 @@ const isValidCompany = function (value) {
 
 
 const alphaNumericValid = (value) => {
-    let alphaRegex = /^[a-zA-Z0-9-_ ]+$/;
+    let alphaRegex = /^[a-zA-Z0-9-_,. ]+$/;
     if (alphaRegex.test(value)) return true; // /^[- a-zA-Z'\.,][^/]{1,150}/ allows every things
   }
 

@@ -50,7 +50,7 @@ const signup = async function (req, res) {
 
   } catch (error) {
     console.log(error.message);
-    return res.status(500).send({ message: error.message });
+    return res.status(500).send({ status: false, message: error.message });
   }
 };
 
@@ -85,6 +85,7 @@ const userLogin = async function (req, res) {
     const token = jwt.sign(
       {
         userId: mailMatch._id.toString(),
+        email:mailMatch.email,
         iat: new Date().getTime() / 1000,
       }, "Asignment by Xhipment",
       { expiresIn: "2h" }
@@ -95,7 +96,7 @@ const userLogin = async function (req, res) {
     return res.status(200).send({ status: true, message: "You are successfully logged in", data: { userId: userId, token: token }, });
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ message: error.message });
+    return res.status(500).send({ status: false, message: error.message });
   }
 };
 

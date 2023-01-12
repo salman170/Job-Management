@@ -7,7 +7,7 @@ require('dotenv').config()
 
 app.use(express.json());
 app.use(multer().any())
-// multer will be used to get access to the file in nodejs
+
 
 mongoose.connect(process.env.MONGO_CLUSTER, { useNewUrlParser: true })
     .then(() => console.log('Connected to MongoDB Database'))
