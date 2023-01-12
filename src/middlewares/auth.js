@@ -1,7 +1,6 @@
 const jobModel = require("../models/jobModel")
 const jwt = require('jsonwebtoken');
-const mongoose = require("mongoose")
-const ObjectId = mongoose.Types.ObjectId.isValid
+const {isValidObjectId} = require("../validator/validator")
 
 
 //<=======================Authentication =================================>
@@ -34,11 +33,11 @@ const authorization = async function (req, res, next) {
 
         if (!jobId) return res.status(403).send({ Status: false, message: "You are not authorized provide jobId in path param " })
 
-        if (!ObjectId(jobId)) return res.status(400).send({ status: false, message: `${jobId}is not in MongoDb objectId format` })
+        if (!isValidObjectId(jobId)) return res.status(400).send({ status: false, message: `${jobId}is not in MongoDb objectId format` })
 
         let jobDetails = await jobModel.findById(jobId)
 
-        if (!jobDetails) return res.status(400).send({ status: false, message: "bookId is invalid" })
+        if (!jobDetails) return res.status(400).send({ status: false, message: "JobId is invalid. No data found" })
 
         if (jobDetails.details._id.toString() !== req.userId) return res.status(403).send({ status: false, message: "You are not authorized" })
 
