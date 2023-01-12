@@ -1,6 +1,6 @@
 const express = require("express")
 const router = express.Router();
-const { signup, getUser, userLogin,deleteUser } = require("../controller/userController")
+const { signup, getUser, userLogin,deleteUser, updateUser } = require("../controller/userController")
 const { createJob, updateJob, deleteJob, getPostedJobDetails } = require("../controller/jobController")
 const {getJob, applyForJob ,deleteApplication, updateApplication} = require("../controller/applicantController")
 const { authentication, authorization } = require("../middlewares/auth")
@@ -10,7 +10,8 @@ const { authentication, authorization } = require("../middlewares/auth")
 router.post('/signup', signup)
 router.post('/login', userLogin)
 router.get('/getuser/:userId', authentication, getUser)
-router.get('/getuser/:userId', authentication, deleteUser)
+router.put('/updateuser/:userId', authentication, updateUser)
+router.delete('/deleteUser/:userId', authentication, deleteUser)
 
 
 //<=======================Job Api =================================>
