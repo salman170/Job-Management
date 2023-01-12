@@ -143,9 +143,10 @@ const updateJob = async (req, res) => {
 
 const deleteJob = async (req, res) => {
   try {
-    if (!req.jobdata.isDeleted === true) return res.status(404).send({ status: false, message: "No data found." })
 
-    await studentModel.findOneAndUpdate({ _id: req.params.jobId },
+    if (req.jobdata.isDeleted === true) return res.status(404).send({ status: false, message: "No data found." })
+
+    await jobModel.findOneAndUpdate({ _id: req.params.jobId },
       { $set: { isDeleted: true, deletedAt: new Date() } })
 
     res.status(200).send({ status: true, message: "Student data is successfully deleted" })

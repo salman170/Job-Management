@@ -17,7 +17,6 @@ const authentication = async (req, res, next) => {
         jwt.verify(token, "Asignment by Xhipment", (err, decodedToken) => {
             if (err) return res.status(401).send({ status: false, message: "token is not valid {" + err.message + "}" })
             req.userId = decodedToken.userId
-            req.email = decodedToken.email
             next();
         })
     }
