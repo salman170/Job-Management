@@ -1,6 +1,6 @@
 const jobModel = require("../models/jobModel")
 const applicantModel = require("../models/applicantModel")
-const { isValidRequestBody, alphaNumericValid, isValidEmail } = require("../validator/validator")
+const { isValidRequestBody, alphaNumericValid, isValidEmail, isValidCompany } = require("../validator/validator")
 const moment = require("moment")
 
 
@@ -12,7 +12,7 @@ const createJob = async (req, res) => {
 
     if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: 'No Job data provided in body' })
 
-    let { title, skills, experience, description ,email} = data
+    let { title, skills, experience, description, email, cname } = data
 
     if (!title) { return res.status(400).send({ status: false, message: "Title is required" }) }
 
@@ -34,12 +34,16 @@ const createJob = async (req, res) => {
 
     if (!isValidEmail(email)) { return res.status(400).send({ status: false, message: "Please provide a valid email" }) }
 
+    if (!cname) { return res.status(400).send({ status: false, message: "Company Name is required" }) }
+
+    if (!isValidCompany(cname)) return res.status(400).send({ status: false, message: "Enter valid Company Name" });
+
     data.details = req.userId
 
     data.postedAt = moment(new Date()).format('DD-MM-YYYY')
 
     const newUser = await (await jobModel.create(data)).populate({
-      path: 'details', select: { _id: 0, 'cname': 1, 'fname': 1, 'lname': 1 }
+      path: 'details', select: { _id: 0, 'fname': 1, 'lname': 1 }
     })
 
     return res.status(201).send({ status: true, message: 'success', data: newUser })
@@ -64,12 +68,18 @@ const getPostedJobDetails = async (req, res) => {
 
     let dataJ = []
 
+    let applicantData = await applicantModel.find({ isDeleted: false }).select({isDeleted:0,_id:0,deletedAt:0,__v:0})
+
     for (let i = 0; i < jobData.length; i++) {
+      let applicant = []
       dataJ.push(jobData[i].toObject())
-      let applicantData = await applicantModel.find({ jobId: dataJ[i]._id })
-      if (applicantData.length > 0) {
-        dataJ[i].applicantDetails = applicantData
-      } else dataJ[i].applicantDetails = "No application submmitted"
+      for (let j in applicantData) {
+        dataJ[i].applicantDetails = "No application submmitted"
+        if (applicantData[j].jobId.toString() === dataJ[i]._id.toString()) {
+          applicant.push(applicantData[j])
+        }
+      }
+      if (applicant.length > 0) dataJ[i].applicantDetails = applicant
     }
 
     return res.status(200).send({ status: true, message: "Applicant List", data: dataJ })
@@ -88,7 +98,7 @@ const updateJob = async (req, res) => {
 
     if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: 'No Job data provided in body for Update' })
 
-    let { title, skills, experience, description, isDeleted, email, ...rest } = data
+    let { title, skills, experience, description, isDeleted, email, cname, ...rest } = data
 
     if (Object.keys(rest).length > 0) return res.status(400).send({ status: false, message: `You can not update these:-( ${Object.keys(rest)} ) data ` })
 
@@ -114,10 +124,16 @@ const updateJob = async (req, res) => {
 
       filter.experience = experience
     }
-    if(email){
+    if (email) {
       if (!isValidEmail(email)) { return res.status(400).send({ status: false, message: "Please provide a valid email" }) }
 
       filter.email = email
+    }
+    if (cname) {
+
+      if (!isValidCompany(cname)) return res.status(400).send({ status: false, message: "Enter valid Company Name" });
+
+      filter.cname = cname
     }
     if (isDeleted == true || isDeleted == false) {
       filter.isDeleted = isDeleted
@@ -125,8 +141,8 @@ const updateJob = async (req, res) => {
 
     filter.postedAt = moment(new Date()).format('DD-MM-YYYY')
 
-    const updateJob = await jobModel.findByIdAndUpdate(req.params.jobId, { $set: filter },{ new: true }).populate({
-      path: 'details', select: { _id: 0, 'cname': 1, 'fname': 1, 'lname': 1 }
+    const updateJob = await jobModel.findByIdAndUpdate(req.params.jobId, { $set: filter }, { new: true }).populate({
+      path: 'details', select: { _id: 0, 'fname': 1, 'lname': 1 }
     })
 
     if (!updateJob) return res.status(404).send({ status: false, message: "No Job found" })
@@ -146,10 +162,10 @@ const deleteJob = async (req, res) => {
 
     if (req.jobdata.isDeleted === true) return res.status(404).send({ status: false, message: "No data found." })
 
-    await jobModel.findOneAndUpdate({ _id: req.params.jobId },
-      { $set: { isDeleted: true, deletedAt: new Date() } })
+    await jobModel.findByIdAndUpdate(req.params.jobId,
+      { $set: { isDeleted: true, deletedAt: new Date(), postedAt: "" } })
 
-    res.status(200).send({ status: true, message: "Student data is successfully deleted" })
+    res.status(200).send({ status: true, message: "Job data is successfully deleted" })
 
   } catch (error) {
     console.log(error.message)

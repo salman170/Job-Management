@@ -40,6 +40,8 @@ const isValidPassword = function (value) {
         return isValid.test(value.trim());
     }
 }
+
+// ------------- validation of company -------------
 const isValidCompany = function (value) {
     if (typeof value !== "string" || value.trim() == "") { return false }
     else {
@@ -48,15 +50,29 @@ const isValidCompany = function (value) {
     }
 }
 
-
+// ------------- validation of string  -------------
 const alphaNumericValid = (value) => {
     let alphaRegex = /^[a-zA-Z0-9-_,. ]+$/;
     if (alphaRegex.test(value)) return true; // /^[- a-zA-Z'\.,][^/]{1,150}/ allows every things
 }
 
-const isValidObjectId = (value) =>{
-    if(!ObjectId(value)) return false
+// ------------- validation of MongoDbId -------------
+const isValidObjectId = (value) => {
+    if (!ObjectId(value)) return false
     else return true
 }
 
-    module.exports = { isValidRequestBody, isValidName, isValidEmail, isValidPassword, isValidCompany, alphaNumericValid, isValidObjectId }
+// ------------- validation of Resume -------------
+const isValidResume = (resume) => {
+    const reg = /application\/doc|application\/pdf/
+    return reg.test(resume);
+}
+
+// ------------- validation of Coverletter -------------
+const isValidCoverLetter = (coverLetter) => {
+    const reg = /text\/md|text\/markdown/
+    return reg.test(coverLetter);
+}
+
+
+module.exports = { isValidResume, isValidCoverLetter, isValidRequestBody, isValidName, isValidEmail, isValidPassword, isValidCompany, alphaNumericValid, isValidObjectId }

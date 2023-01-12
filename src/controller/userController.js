@@ -2,7 +2,7 @@
 const userModel = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { isValidRequestBody, isValidName, isValidEmail, isValidPassword,isValidCompany, isValidObjectId } = require("../validator/validator");
+const { isValidRequestBody, isValidName, isValidEmail, isValidPassword, isValidObjectId } = require("../validator/validator");
 
 //<<-----------------------------------------------Create user-------------------------------------------------------->>
 const signup = async function (req, res) {
@@ -13,8 +13,7 @@ const signup = async function (req, res) {
 
     //validations
 
-    let {  fname, lname, email, password, cname } = data
-
+    let {  fname, lname, email, password } = data
 
     if (!fname) { return res.status(400).send({ status: false, message: "First Name is required" }) }
 
@@ -33,10 +32,6 @@ const signup = async function (req, res) {
     if (!password) { return res.status(400).send({ status: false, message: "Password is required" }) }
 
     if (!isValidPassword(password)) return res.status(400).send({ status: false, message: "password is not in correct format(length should be from 8-15)" })
-
-    if (!cname) { return res.status(400).send({ status: false, message: "Company Name is required" }) }
-
-    if (!isValidCompany(cname)) return res.status(400).send({ status: false, message: "Enter valid Company Name" });
 
     //encrypting password
     const saltRounds = 10;
@@ -85,7 +80,6 @@ const userLogin = async function (req, res) {
     const token = jwt.sign(
       {
         userId: mailMatch._id.toString(),
-        email:mailMatch.email,
         iat: new Date().getTime() / 1000,
       }, "Asignment by Xhipment",
       { expiresIn: "2h" }
@@ -113,7 +107,7 @@ const getUser = async function (req, res) {
 
     const userData = await userModel.findById(req.userId);
 
-    if (!userData) return res.status(404).send({ status: false, message: `No user data found for this ${userId}`, });
+    if (!userData || userData.isDeleted==true) return res.status(404).send({ status: false, message: `No user data found for this ${userId}`, });
 
     return res.status(200).send({ status: true, message: "User profile details", data: userData });
 
@@ -123,6 +117,31 @@ const getUser = async function (req, res) {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    let userId = req.params.userId;
+
+    if (!userId) return res.status(400).send({ status: false, message: "userId is required in path params", });
+
+    if (!isValidObjectId(userId.trim())) return res.status(400).send({ status: false, message: `${userId} is Invalid UserId ` });
+
+    if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorized access!" });
+
+    let userData = await userModel.findById(userId)
+
+    if (userData.isDeleted === true) return res.status(404).send({ status: false, message: "No data found." })
+
+    await userModel.findByIdAndUpdate(req.userId ,
+      { $set: { isDeleted: true, deletedAt: new Date()} })
+
+    res.status(200).send({ status: true, message: "User data is successfully deleted" })
+
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).send({ status: false, message: error.message })
+  }
+}
 
 
-module.exports = { signup, getUser, userLogin};
+
+module.exports = { signup, getUser, userLogin, deleteUser, deleteUser};
